@@ -1,7 +1,11 @@
 class User < ActiveRecord::Base
 
-  has_one :user_information
+  has_one :info, :class_name => "UserInformation", :dependent => :destroy
   has_many :templates
+
+  validates :access_token, :length => { :is => 32}
+  validates :access_token, :uniqueness => true
+  validates :access_token, :presence => true
 
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
@@ -11,16 +15,15 @@ class User < ActiveRecord::Base
 
   # Setup accessible (or protected) attributes for your model
   attr_accessible :email, :password, :password_confirmation, :remember_me
-  attr_protected :api_key
 
-  #
-  # Use securerandom to generate api tokens
-  # SecureRandom.urlsafe_base64
+  before_validation(:on => :create) do
+    generate_access_token
+  end
 
-  before_create :generate_api_key
-
-  def generate_api_key
-    self.api_key = SecureRandom.hex(16)
+  def generate_access_token
+    begin
+      self.access_token = SecureRandom.hex(16)
+    end while self.class.exists?(access_token: access_token)
   end
 
 end
