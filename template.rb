@@ -1,13 +1,20 @@
 class Template < ActiveRecord::Base
 
+  # Attributes
   attr_accessible :body_html, :body_text, :generate_text, :name, :subject, :body
   attr_readonly :user_id, :ident
 
+  # Relations
   belongs_to :user
 
+  # Validations
   validates :name, :subject, presence: true
 
+  # Callbacks
   before_create :assign_ident
+
+  # Scopes
+  scope :find_by_id_or_ident, lambda { |id| where("id = ? OR ident = ?", id, id) }
 
   def body=(body={})
     self.body_html = body[:html] if body[:html]
