@@ -28,6 +28,10 @@ class Template < ActiveRecord::Base
     }
   end
 
+  def render(type, variables={})
+    Liquid::Template.parse(self.send("body_#{type}")).render(variables)
+  end
+
   private
 
   def assign_ident
